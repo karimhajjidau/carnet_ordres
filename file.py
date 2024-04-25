@@ -45,7 +45,7 @@ class Orderbook:
 
         with self.lock:
             if order.order_type == "limit":
-                self.add_limit_order(order)
+                self.execute_limit_order(order)
             elif order.order_type == "market":
                 self.execute_market_order(order)
 
@@ -56,7 +56,6 @@ class Orderbook:
 
     def execute_limit_order(self, order):
         self.add_limit_order(order)
-        executed_list = self.asks if order.side == 'sell' else self.bids
         opposite_list = self.asks if order.side == 'buy' else self.bids
         i = 0
         while order.quantity > 0 and i < len(opposite_list):
@@ -66,30 +65,29 @@ class Orderbook:
                 order.quantity -= trade_quantity
                 best_match.quantity -= trade_quantity
                 if best_match.quantity == 0:
-                    opposite_list.pop(i)
-                    i += 1
+                    opposite_list.pop(i)  # Remove fully matched order
                 else:
-                    executed_list.pop(0)
-                    
+                    i += 1  # Increment only if not removing an item
 
     def execute_market_order(self, order):
-        executed_list = self.asks if order.side == 'sell' else self.bids
         opposite_list = self.asks if order.side == 'buy' else self.bids
         if not opposite_list:
-            print(f"No orders available for matching.")
+            print(f"No orders available for matching with Order {order.order_id}.")
             return
 
-        index = 0
-        while order.quantity > 0 and index < len(opposite_list):
-            best_match = opposite_list[index]
+        i = 0
+        while order.quantity > 0 and i < len(opposite_list):
+            best_match = opposite_list[i]
             trade_quantity = min(order.quantity, best_match.quantity)
             order.quantity -= trade_quantity
             best_match.quantity -= trade_quantity
             if best_match.quantity == 0:
-                opposite_list.pop(index)
-                index += 1
+                opposite_list.pop(i)  # Remove fully matched order
             else:
-                executed_list.pop(0)
+                i += 1  # Increment only if not removing an item
+
+        if order.quantity > 0:  # Check if some quantity remains unexecuted
+            print(f"Order number {order.order_id} not fully executed. Remaining quantity: {order.quantity}")
 
 
 
@@ -116,10 +114,10 @@ orderbook.open_market()
 orderbook.add_order(Order('limit', 'sell', 102, 200))
 orderbook.add_order(Order('limit', 'buy', 102, 200))
 print(orderbook)
-orderbook.open_market()
+orderbook.add_order(Order('limit', 'buy', 102, 50))
 print(orderbook)
 print(orderbook)
-orderbook.add_order(Order('market', 'sell', None, 150))
+orderbook.add_order(Order('market', 'buy', None, 200))
 print(orderbook)
 orderbook.close_market()
 print(orderbook)
