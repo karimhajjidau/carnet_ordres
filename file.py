@@ -118,13 +118,13 @@ class Orderbook:
 
 # Example usage
 orderbook = Orderbook()
+orderbook.open_market()
 orderbook.add_order(Order('limit', 'sell', 102, 200))
-orderbook.add_order(Order('limit', 'buy', 102, 200))
+print(orderbook)
+orderbook.add_order(Order('limit', 'buy', 101, 200))
 print(orderbook)
 orderbook.add_order(Order('limit', 'buy', 102, 50))
+orderbook.add_order(Order('market', 'sell', None, 200))
 print(orderbook)
-print(orderbook)
-orderbook.add_order(Order('market', 'buy', None, 200))
-print(orderbook)
-orderbook.close_market()
+
 print(orderbook)
