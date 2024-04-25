@@ -22,13 +22,13 @@ class Orderbook:
         with self.lock:
             self.market_open = True
             print("Market is now open.")
-            self.fix_orders(True)
+            self.fix_orders()
 
     def close_market(self):
         with self.lock:
             self.market_open = False
             print("Market is now closed.")
-            self.fix_orders(False)
+            self.fix_orders()
 
     def add_order(self, order):
 
@@ -89,19 +89,27 @@ class Orderbook:
         if order.quantity > 0:  # Check if some quantity remains unexecuted
             print(f"Order number {order.order_id} not fully executed. Remaining quantity: {order.quantity}")
 
-
-
-    def fix_orders(self, opening=True):
+    def fix_orders(self):
         if not self.bids or not self.asks:
-            print("Not enough orders to fix.")
+            print("No sufficient bids or asks to fix prices.")
             return
+        
+        min_price = min(ask.price for ask in self.asks)
+        max_price = max(bid.price for bid in self.bids)
 
-        potential_trades = [(min(bid.quantity, ask.quantity), bid, ask) for bid in self.bids for ask in self.asks if bid.price >= ask.price]
-        potential_trades.sort(key=lambda x: x[0], reverse=True)
-        if potential_trades:
-            max_volume_trade = potential_trades[0]
-            fixing_price = (max_volume_trade[1].price + max_volume_trade[2].price) / 2
-            print(f"Fixing price at {'opening' if opening else 'closing'}: {fixing_price}")
+        price_to_volume = {}
+        for price in range(min_price, max_price + 1):
+            bid_volume = sum(bid.quantity for bid in self.bids if bid.price >= price)
+            ask_volume = sum(ask.quantity for ask in self.asks if ask.price <= price)
+            transaction_volume = min(bid_volume, ask_volume)
+            price_to_volume[price] = transaction_volume
+
+        if price_to_volume:
+            equilibrium_price = max(price_to_volume, key=price_to_volume.get)
+            max_volume = price_to_volume[equilibrium_price]
+            print(f"Fixing price at opening: {equilibrium_price}. Max volume of transactions: {max_volume}")
+        else:
+            print("No bids or asks to fix prices.")
 
     def __str__(self):
         bids_str = '\n'.join([f"Bid: {order.order_id}, Price: {order.price}, Quantity: {order.quantity}" for order in self.bids if order.quantity > 0])
@@ -110,7 +118,6 @@ class Orderbook:
 
 # Example usage
 orderbook = Orderbook()
-orderbook.open_market()
 orderbook.add_order(Order('limit', 'sell', 102, 200))
 orderbook.add_order(Order('limit', 'buy', 102, 200))
 print(orderbook)
