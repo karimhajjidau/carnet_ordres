@@ -7,7 +7,7 @@ import requests
 
 class Orderbook:
     def __init__(self):
-    # Initialise un nouveau carnet d'ordres avec des listes vides pour les offres et demandes.
+    # Initialise un nouveau carnet d'ordres avec des listes vides pour les offres et demandes et définit l'état du marché comme fermé initialement.
 
         self.current_order_id = 1
         self.bids = []
@@ -15,14 +15,14 @@ class Orderbook:
         self.market_open = False
         self.lock = threading.Lock() # Utilisé pour assurer l'accès exclusif aux opérations sur les ordres
 
-    # Ouvre le marché et affiche le prix du fixing
+    # Ouvre le marché permettant l'ajout et l'exécution d'ordres et affiche le prix du fixing
     def open_market(self):
         with self.lock:
             self.market_open = True
             print("Market is now open.")
             self.fix_orders() # fixing effectué à l'ouverture
 
-    # Ferme le marché et affiche le prix du fixing à la clotûre
+    # Ferme le marché, bloque l'ajout d'ordres et affiche le prix du fixing à la clotûre
     def close_market(self):
         with self.lock:
             self.market_open = False
@@ -45,9 +45,9 @@ class Orderbook:
 
         with self.lock:
             if order.order_type == "limit":
-                self.execute_limit_order(order)
+                self.execute_limit_order(order) # Traite les ordres à prix limité
             elif order.order_type == "market":
-                self.execute_market_order(order)
+                self.execute_market_order(order) # Exécute immédiatement les ordres au marché
 
     # Ajoute un ordre à prix limité dans la liste appropriée et trie cette liste.
     def add_limit_order(self, order):
