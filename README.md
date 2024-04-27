@@ -21,4 +21,4 @@ Intégration des données réelles :
 - Fetch Binance snapshot : Récupère un instantané du carnet d'ordres de la plateforme Binance pour initialiser le simulateur avec des données de marché réelles.
 
 Utilisation du simulateur :
-Pour utiliser ce simulateur, vous devez d'abord configurer votre environnement Python et installer les dépendances nécessaires. Ensuite, vous pouvez exécuter le script pour interagir avec le simulateur via un terminal.
+- Pour utiliser ce simulateur, vous devez d'abord configurer votre environnement Python et installer les dépendances nécessaires. Ensuite, vous pouvez exécuter le script pour interagir avec le simulateur via un terminal.
