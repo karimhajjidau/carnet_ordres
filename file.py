@@ -1,5 +1,6 @@
 import threading
 import time
+import requests
 
 class Order:
     def __init__(self, order_type, side, price, quantity):
@@ -98,7 +99,7 @@ class Orderbook:
         max_price = max(bid.price for bid in self.bids)
 
         price_to_volume = {}
-        for price in range(min_price, max_price + 1):
+        for price in range(int(min_price), int(max_price) + 1):
             bid_volume = sum(bid.quantity for bid in self.bids if bid.price >= price)
             ask_volume = sum(ask.quantity for ask in self.asks if ask.price <= price)
             transaction_volume = min(bid_volume, ask_volume)
@@ -116,15 +117,47 @@ class Orderbook:
         asks_str = '\n'.join([f"Ask: {order.order_id}, Price: {order.price}, Quantity: {order.quantity}" for order in self.asks if order.quantity > 0])
         return f"Orderbook:\n\nBids:\n{bids_str}\n\nAsks:\n{asks_str}"
 
+    def fetch_binance_snapshot(self, symbol='BTCUSDT'):
+        url = f"https://api.binance.com/api/v3/depth?symbol={symbol}&limit=1000"
+        try:
+            response = requests.get(url)
+            response.raise_for_status()  # Raises an HTTPError for bad responses
+            data = response.json()
+            
+            with self.lock:
+                self.bids.clear()  # Clear existing data
+                self.asks.clear()
+                
+                for bid in data['bids']:
+                    price, quantity = float(bid[0]), float(bid[1])
+                    order = Order('limit', 'buy', price, quantity)
+                    self.add_order(order)  # Managed addition
+                    
+                for ask in data['asks']:
+                    price, quantity = float(ask[0]), float(ask[1])
+                    order = Order('limit', 'sell', price, quantity)
+                    self.add_order(order)  # Managed addition
+                
+        except requests.RequestException as e:
+            print(f"Failed to fetch data: {e}")
+        except ValueError:
+            print("Failed to parse JSON data")
+
+
 # Example usage
 orderbook = Orderbook()
 orderbook.open_market()
 orderbook.add_order(Order('limit', 'sell', 102, 200))
 print(orderbook)
-orderbook.add_order(Order('limit', 'buy', 101, 200))
-print(orderbook)
 orderbook.add_order(Order('limit', 'buy', 102, 50))
-orderbook.add_order(Order('market', 'sell', None, 200))
+orderbook.add_order(Order('market', 'buy', None, 200))
 print(orderbook)
 
+print(orderbook)
+
+
+#Example usage
+orderbook = Orderbook()
+orderbook.fetch_binance_snapshot()  # Récupération de l'état actuel du carnet d'ordres de Binance
+orderbook.open_market()
 print(orderbook)
