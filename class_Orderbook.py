@@ -98,12 +98,11 @@ class Orderbook:
         if not self.bids or not self.asks:
             print("No sufficient bids or asks to fix prices.")
             return
-        
-        min_price = min(ask.price for ask in self.asks)
-        max_price = max(bid.price for bid in self.bids)
 
+        unique_prices = sorted(set([bid.price for bid in self.bids] + [ask.price for ask in self.asks]))
         price_to_volume = {}
-        for price in range(int(min_price), int(max_price) + 1):
+
+        for price in unique_prices:
             bid_volume = sum(bid.quantity for bid in self.bids if bid.price >= price)
             ask_volume = sum(ask.quantity for ask in self.asks if ask.price <= price)
             transaction_volume = min(bid_volume, ask_volume)
@@ -112,9 +111,9 @@ class Orderbook:
         if price_to_volume:
             equilibrium_price = max(price_to_volume, key=price_to_volume.get)
             max_volume = price_to_volume[equilibrium_price]
-            print(f"Fixing price at opening: {equilibrium_price}. Max volume of transactions: {max_volume}")
+            print(f"Fixing price at: {equilibrium_price}. Max volume of transactions: {max_volume}")
         else:
-            print("No bids or asks to fix prices.")
+            print("No effective price to fix based on the given bids and asks.")
 
     # Modifie un ordre existant avec un nouveau prix et/ou une nouvelle quantité si spécifiés.
     def modify_order(self, order_id, new_price=None, new_quantity=None):
