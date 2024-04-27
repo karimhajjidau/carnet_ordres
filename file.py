@@ -118,7 +118,7 @@ class Orderbook:
         return f"Orderbook:\n\nBids:\n{bids_str}\n\nAsks:\n{asks_str}"
 
     def fetch_binance_snapshot(self, symbol='BTCUSDT'):
-        url = f"https://api.binance.com/api/v3/depth?symbol={symbol}&limit=1000"
+        url = f"https://api.binance.com/api/v3/depth?symbol={symbol}&limit=50"
         try:
             response = requests.get(url)
             response.raise_for_status()  # Raises an HTTPError for bad responses
@@ -150,6 +150,7 @@ orderbook.open_market()
 orderbook.add_order(Order('limit', 'sell', 102, 200))
 print(orderbook)
 orderbook.add_order(Order('limit', 'buy', 102, 50))
+print(orderbook)
 orderbook.add_order(Order('market', 'buy', None, 200))
 print(orderbook)
 
