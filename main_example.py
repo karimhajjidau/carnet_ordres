@@ -1,11 +1,12 @@
 import requests
 
+# Import des classes Orderbook et Order définies dans les fichiers séparés
 from class_Orderbook import Orderbook
 from class_Order import Order
 
 # Initialisation d'un carnet d'ordres
 orderbook = Orderbook()
-orderbook.open_market()  # Ouvre le marché pour permettre l'ajout et l'exécution des ordres
+orderbook.open_market()  # Ouvre le marché pour permettre l'ajout et l'exécution des ordres. C'est nécessaire pour commencer à interagir avec le carnet d'ordres.
 
 # Ajout d'un ordre de vente à prix limité
 orderbook.add_order(Order('limit', 'sell', 102, 200))
