@@ -24,5 +24,5 @@ orderbook.fetch_binance_snapshot()  # Récupération de l'état actuel du carnet
 orderbook.open_market()
 print(orderbook)
 
-orderbook.add_order(Order('market', 'buy', None, 0.58281)) #Ajout d'achat ordre au marché (execiuté) au meilleur prix
+orderbook.add_order(Order('market', 'buy', None, 0.58281)) #Ajout d'achat ordre au marché (éxecuté) au meilleur prix
 print(orderbook)
