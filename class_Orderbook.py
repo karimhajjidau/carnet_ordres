@@ -149,8 +149,7 @@ class Orderbook:
         return f"Orderbook:\n\nBids:\n{bids_str}\n\nAsks:\n{asks_str}"
 
     # Récupère et traite un carnet d'ordres pour un indice spécifique.
-    #Ici, on choisit le Bitcoin
-    def fetch_binance_snapshot(self, symbol='BTCUSDT'):
+    def fetch_binance_snapshot(self, symbol):
         url = f"https://api.binance.com/api/v3/depth?symbol={symbol}&limit=50"
         try:
             response = requests.get(url)
