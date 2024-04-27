@@ -1,15 +1,9 @@
+from class_Order import Order
+
 import threading
 import time
 import requests
 
-class Order:
-    def __init__(self, order_type, side, price, quantity):
-        self.order_id = None
-        self.timestamp = time.time()
-        self.order_type = order_type
-        self.side = side
-        self.price = price
-        self.quantity = quantity
 
 class Orderbook:
     def __init__(self):
@@ -21,7 +15,7 @@ class Orderbook:
 
     def open_market(self):
         with self.lock:
-            self.market_open = True 
+            self.market_open = True
             print("Market is now open.")
             self.fix_orders() # fixing effectué à l'ouverture
 
@@ -168,26 +162,3 @@ class Orderbook:
             print(f"Failed to fetch data: {e}")
         except ValueError:
             print("Failed to parse JSON data")
-
-
-# Example usage 
-orderbook = Orderbook()
-orderbook.open_market()
-orderbook.add_order(Order('limit', 'sell', 102, 200))
-print(orderbook)
-orderbook.add_order(Order('limit', 'buy', 102, 50))
-print(orderbook)
-orderbook.add_order(Order('market', 'buy', None, 25))
-
-orderbook.modify_order(1,102,100) #Changement de l'ordre numéro 1
-print(orderbook)
-
-
-#Example usage with snapshot
-orderbook = Orderbook()
-orderbook.fetch_binance_snapshot()  # Récupération de l'état actuel du carnet d'ordres de Binance
-orderbook.open_market()
-print(orderbook)
-
-orderbook.add_order(Order('market', 'buy', None, 0.58281)) #Ajout d'achat ordre au marché (execiuté) au meilleur prix
-print(orderbook)
