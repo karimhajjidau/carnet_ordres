@@ -7,30 +7,35 @@ import requests
 
 class Orderbook:
     def __init__(self):
+    # Initialise un nouveau carnet d'ordres avec des listes vides pour les offres et demandes.
+
         self.current_order_id = 1
         self.bids = []
         self.asks = []
         self.market_open = False
-        self.lock = threading.Lock()
+        self.lock = threading.Lock() # Utilisé pour assurer l'accès exclusif aux opérations sur les ordres
 
+    # Ouvre le marché et affiche le prix du fixing
     def open_market(self):
         with self.lock:
             self.market_open = True
             print("Market is now open.")
             self.fix_orders() # fixing effectué à l'ouverture
 
+    # Ferme le marché et affiche le prix du fixing à la clotûre
     def close_market(self):
         with self.lock:
             self.market_open = False
             print("Market is now closed.")
             self.fix_orders()
 
+    # Ajoute un nouvel ordre au carnet, en traitant différemment les ordres au marché et à prix limité.
     def add_order(self, order):
-
         order.order_id = self.current_order_id
         self.current_order_id += 1
 
         if not self.market_open:
+            # Refuse les ordres au marché lorsque le marché est fermé
             if order.order_type == 'market':
                 print("Market is closed. Market orders are not accepted.")
                 return
@@ -44,11 +49,14 @@ class Orderbook:
             elif order.order_type == "market":
                 self.execute_market_order(order)
 
+    # Ajoute un ordre à prix limité dans la liste appropriée et trie cette liste.
     def add_limit_order(self, order):
         target_list = self.bids if order.side == 'buy' else self.asks
         target_list.append(order)
+        # Trie les ordres pour maintenir l'ordre de priorité par prix et par heure
         target_list.sort(key=lambda x: (-x.price, x.timestamp) if order.side == 'buy' else (x.price, x.timestamp))
 
+    # Exécute un ordre à prix limité en cherchant des correspondances dans la liste opposée.
     def execute_limit_order(self, order):
         self.add_limit_order(order)
         opposite_list = self.asks if order.side == 'buy' else self.bids
@@ -60,10 +68,11 @@ class Orderbook:
                 order.quantity -= trade_quantity
                 best_match.quantity -= trade_quantity
                 if best_match.quantity == 0:
-                    opposite_list.pop(i)  # Remove fully matched order
+                    opposite_list.pop(i)  # Supprime un ordre entièrement exécuté de la liste
                 else:
-                    i += 1  # Increment only if not removing an item
+                    i += 1  # Continue la recherche si l'ordre n'est pas entièrement exécuté
 
+    # Exécute un ordre au marché en trouvant les meilleures correspondances disponibles.
     def execute_market_order(self, order):
         opposite_list = self.asks if order.side == 'buy' else self.bids
         if not opposite_list:
@@ -84,6 +93,7 @@ class Orderbook:
         if order.quantity > 0:  # Check if some quantity remains unexecuted
             print(f"Order number {order.order_id} not fully executed. Remaining quantity: {order.quantity}")
 
+    #Réalise un fixing selon la méthode habituelle (cours PMF). Cette méthode pourraît varier selon les marchés.
     def fix_orders(self):
         if not self.bids or not self.asks:
             print("No sufficient bids or asks to fix prices.")
@@ -106,6 +116,7 @@ class Orderbook:
         else:
             print("No bids or asks to fix prices.")
 
+    # Modifie un ordre existant avec un nouveau prix et/ou une nouvelle quantité si spécifiés.
     def modify_order(self, order_id, new_price=None, new_quantity=None):
         with self.lock:
             # Search in both bids and asks
@@ -119,7 +130,8 @@ class Orderbook:
                         print(f"Order {order_id} modified to new price: {new_price}, new quantity: {new_quantity}")
                         return
             print(f"No order found with ID {order_id}.")
-            
+
+    # Supprime un ordre existant
     def remove_order(self, order_id):
         with self.lock:
             # Search and remove from both bids and asks
@@ -131,12 +143,14 @@ class Orderbook:
                         return
             print(f"No order found with ID {order_id}.")
     
-    
+    #État actuel du carnet d'ordres lorsqu'il est "print"
     def __str__(self):
         bids_str = '\n'.join([f"Bid: {order.order_id}, Price: {order.price}, Quantity: {order.quantity}" for order in self.bids if order.quantity > 0])
         asks_str = '\n'.join([f"Ask: {order.order_id}, Price: {order.price}, Quantity: {order.quantity}" for order in self.asks if order.quantity > 0])
         return f"Orderbook:\n\nBids:\n{bids_str}\n\nAsks:\n{asks_str}"
 
+    # Récupère et traite un carnet d'ordres pour un indice spécifique.
+    #Ici, on choisit le Bitcoin
     def fetch_binance_snapshot(self, symbol='BTCUSDT'):
         url = f"https://api.binance.com/api/v3/depth?symbol={symbol}&limit=50"
         try:
