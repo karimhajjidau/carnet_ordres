@@ -21,9 +21,9 @@ class Orderbook:
 
     def open_market(self):
         with self.lock:
-            self.market_open = True
+            self.market_open = True 
             print("Market is now open.")
-            self.fix_orders()
+            self.fix_orders() # fixing effectué à l'ouverture
 
     def close_market(self):
         with self.lock:
@@ -112,6 +112,32 @@ class Orderbook:
         else:
             print("No bids or asks to fix prices.")
 
+    def modify_order(self, order_id, new_price=None, new_quantity=None):
+        with self.lock:
+            # Search in both bids and asks
+            for order_list in [self.bids, self.asks]:
+                for order in order_list:
+                    if order.order_id == order_id:
+                        if new_price is not None:
+                            order.price = new_price
+                        if new_quantity is not None:
+                            order.quantity = new_quantity
+                        print(f"Order {order_id} modified to new price: {new_price}, new quantity: {new_quantity}")
+                        return
+            print(f"No order found with ID {order_id}.")
+            
+    def remove_order(self, order_id):
+        with self.lock:
+            # Search and remove from both bids and asks
+            for order_list in [self.bids, self.asks]:
+                for i, order in enumerate(order_list):
+                    if order.order_id == order_id:
+                        order_list.pop(i)
+                        print(f"Order {order_id} removed.")
+                        return
+            print(f"No order found with ID {order_id}.")
+    
+    
     def __str__(self):
         bids_str = '\n'.join([f"Bid: {order.order_id}, Price: {order.price}, Quantity: {order.quantity}" for order in self.bids if order.quantity > 0])
         asks_str = '\n'.join([f"Ask: {order.order_id}, Price: {order.price}, Quantity: {order.quantity}" for order in self.asks if order.quantity > 0])
@@ -144,24 +170,24 @@ class Orderbook:
             print("Failed to parse JSON data")
 
 
-# Example usage
+# Example usage 
 orderbook = Orderbook()
 orderbook.open_market()
 orderbook.add_order(Order('limit', 'sell', 102, 200))
 print(orderbook)
 orderbook.add_order(Order('limit', 'buy', 102, 50))
 print(orderbook)
-orderbook.add_order(Order('market', 'buy', None, 200))
+orderbook.add_order(Order('market', 'buy', None, 25))
+
+orderbook.modify_order(1,100,1) #Changement de l'ordre numéro 2
 print(orderbook)
 
-print(orderbook)
 
-
-#Example usage
+#Example usage with snapshot
 orderbook = Orderbook()
 orderbook.fetch_binance_snapshot()  # Récupération de l'état actuel du carnet d'ordres de Binance
 orderbook.open_market()
 print(orderbook)
 
-orderbook.add_order(Order('market', 'buy', None, 0.58281)) #Ajout d'un ordre au marché sur notre carnet d'ordre récupéré de Binance (Bitcoin)
+orderbook.add_order(Order('market', 'buy', None, 0.58281)) #Ajout d'achat ordre au marché (execiuté) au meilleur prix
 print(orderbook)
