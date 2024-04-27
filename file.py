@@ -179,7 +179,7 @@ orderbook.add_order(Order('limit', 'buy', 102, 50))
 print(orderbook)
 orderbook.add_order(Order('market', 'buy', None, 25))
 
-orderbook.modify_order(1,100,1) #Changement de l'ordre numéro 2
+orderbook.modify_order(1,102,100) #Changement de l'ordre numéro 1
 print(orderbook)
 
 
