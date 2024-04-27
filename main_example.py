@@ -25,7 +25,7 @@ print(orderbook)  # Affichage de l'état du carnet après modification de l'ordr
 
 # Exemple d'utilisation avec récupération de l'état actuel du carnet d'ordres sur Binance
 orderbook = Orderbook()
-orderbook.fetch_binance_snapshot()  # Télécharge et intègre les données récentes de Binance dans le carnet
+orderbook.fetch_binance_snapshot('BTCUSDT')  # Télécharge et intègre les données récentes de Binance dans le carnet
 orderbook.open_market()  # Réouverture du marché pour permettre l'ajout et l'exécution des ordres
 print(orderbook)  # Affichage de l'état initial du carnet après récupération des données
 
