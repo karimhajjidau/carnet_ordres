@@ -162,3 +162,6 @@ orderbook = Orderbook()
 orderbook.fetch_binance_snapshot()  # Récupération de l'état actuel du carnet d'ordres de Binance
 orderbook.open_market()
 print(orderbook)
+
+orderbook.add_order(Order('market', 'buy', None, 0.58281)) #Ajout d'un ordre au marché sur notre carnet d'ordre récupéré de Binance (Bitcoin)
+print(orderbook)
